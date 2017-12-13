@@ -133,19 +133,16 @@ function onRouteGetTodo(req, res){
 function onRoutePutTodo(req, res){
     var body = req.body;
     if(!body.text || body.text.length <= 0){
-      console.log("text");
         sendBadStatusResponse(res, 400);
         return;
     }
 
     if(!(body.hasOwnProperty("complete"))){
-        console.log("comp");
         sendBadStatusResponse(res, 400);
         return;
     }
 
     if (!(body.hasOwnProperty("created_at"))) {
-      console.log("created_at");
       sendBadStatusResponse(res, 400);
       return;
     }
