@@ -20,8 +20,10 @@ var defaultJSON = {
 
 var Todo = function(){
     this.id = guid();
-    this.text = "";
+    this.title = "";
+    this.description = "";
     this.complete = false;
+    this.created_at = "";
 };
 
 function checkJSONExists(){
@@ -132,7 +134,7 @@ function onRouteGetTodo(req, res){
 
 function onRoutePutTodo(req, res){
     var body = req.body;
-    if(!body.text || body.text.length <= 0){
+    if(!body.title || body.title.length <= 0){
         sendBadStatusResponse(res, 400);
         return;
     }
@@ -153,7 +155,8 @@ function onRoutePutTodo(req, res){
         for(var i = 0, len = todos.length; i < len; i++){
             var todo = todos[i];
             if(todo.id == req.params.id){
-                todo.text = body.text;
+                todo.title = body.title;
+                todo.description = body.description;
                 todo.complete = body.complete == "true";
                 todo.created_at = body.created_at;
                 resTodo = todo;
@@ -205,12 +208,18 @@ app.get('/todos', function(req, res){
 app.post('/todos', function(req, res){
     var body = req.body;
     var todo = new Todo();
-    if(body.text || body.text.length > 0){
-        todo.text = body.text;
+
+    if(body.title || body.title.length > 0){
+        todo.title = body.title;
     }else{
         sendBadStatusResponse(res, 400);
         return;
     }
+
+    if (body.description || body.description.length > 0) {
+      todo.description = body.description;
+    }
+
     if(body.hasOwnProperty("complete") &&
        (body.complete == "true" || body.complete == "false")){
         todo.complete = body.complete == "true"
