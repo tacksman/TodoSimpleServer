@@ -22,7 +22,7 @@ var Todo = function(){
     this.id = guid();
     this.title = "";
     this.description = "";
-    this.complete = false;
+    this.completed = false;
     this.created_at = "";
 };
 
@@ -91,7 +91,7 @@ function getTodo(id){
                 resolve(null);
             }
         }).then(function(json){
-            var todos = json.todos;
+            var todos = json;
             if(!todos){
                 resolve(null);
                 return;
@@ -139,7 +139,7 @@ function onRoutePutTodo(req, res){
         return;
     }
 
-    if(!(body.hasOwnProperty("complete"))){
+    if(!(body.hasOwnProperty("completed"))){
         sendBadStatusResponse(res, 400);
         return;
     }
@@ -150,29 +150,29 @@ function onRoutePutTodo(req, res){
     }
 
     getTodoList().then(function(json){
-        var todos = json.todos;
+        var todos = json;
         var resTodo;
         for(var i = 0, len = todos.length; i < len; i++){
             var todo = todos[i];
             if(todo.id == req.params.id){
                 todo.title = body.title;
                 todo.description = body.description;
-                todo.complete = body.complete == "true";
+                todo.completed = body.completed;
                 todo.created_at = body.created_at;
                 resTodo = todo;
             }
             todos[i] = todo;
         }
-        json.todos = todos;
+        json = todos;
         writeJSON(json).then(function(){
-            res.json(resTodo);
+            res.json(resTodo.id);
         });
     })
 }
 
 function onRouteDeleteTodo(req, res){
     getTodoList().then(function(json){
-        var todos = json.todos;
+        var todos = json;
         for(var i = 0, len = todos.length; i < len; i++){
             var todo = todos[i];
             if(todo.id == req.params.id){
@@ -180,7 +180,7 @@ function onRouteDeleteTodo(req, res){
                 break;
             }
         }
-        json.todos = todos;
+        json = todos;
         writeJSON(json).then(function(){
             res.json(json);
         });
@@ -209,34 +209,43 @@ app.post('/todos', function(req, res){
     var body = req.body;
     var todo = new Todo();
 
-    if(body.title || body.title.length > 0){
+    if(body.title && body.title.length > 0){
         todo.title = body.title;
     }else{
+        console.log("title");
         sendBadStatusResponse(res, 400);
         return;
     }
 
-    if (body.description || body.description.length > 0) {
+    if (body.description && body.description.length > 0) {
       todo.description = body.description;
     }
 
-    if(body.hasOwnProperty("complete") &&
-       (body.complete == "true" || body.complete == "false")){
-        todo.complete = body.complete == "true"
+    if(body.hasOwnProperty("completed") &&
+       ((body.completed == "true" || body.completed == "false") ||
+       (body.completed == true || body.completed == false))
+     ) {
+        todo.completed = body.completed == "true"
     }else{
-        sendBadStatusResponse(res, 400);
-        return;
+      console.log("completed");
+      console.log("hasOwnProperty: " + body.hasOwnProperty("completed"));
+      console.log("property: " + (body.completed == "true" || body.completed == "false"));
+      console.log(body);
+      sendBadStatusResponse(res, 400);
+      return;
     }
 
     if (body.hasOwnProperty("created_at")) {
       todo.created_at = body.created_at;
     } else {
+      console.log("created_at");
+      console.log(body);
       sendBadStatusResponse(res, 400);
       return;
     }
 
     getTodoList().then(function(json){
-        json.todos.push(todo);
+        json.push(todo);
         return writeJSON(json);
     }).then(function(json){
         res.json(todo.id);
